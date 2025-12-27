@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Sparkles, Hash, Edit, Loader2, Image as ImageIcon } from "lucide-react";
+import { Sparkles, Edit, Loader2, Image as ImageIcon } from "lucide-react";
 
 const GenerateImage = () => {
   const imageStyles = [
@@ -18,10 +18,10 @@ const GenerateImage = () => {
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [publish, setPublish] = useState(false); // ✅ added
 
   const onSubmitHandler = async (e) => {
     e.preventDefault();
-
     if (!input.trim()) return;
 
     setLoading(true);
@@ -35,13 +35,14 @@ const GenerateImage = () => {
         body: JSON.stringify({
           prompt: input,
           style: selectedStyle,
+          publish,
         }),
       });
 
       if (!res.ok) throw new Error("Image generation failed");
 
       const data = await res.json();
-      setResult(data.imageUrl); // expected backend response
+      setResult(data.imageUrl);
     } catch (err) {
       console.error(err);
       setError("Failed to generate image. Try again.");
@@ -51,7 +52,7 @@ const GenerateImage = () => {
   };
 
   return (
-    <div className="h-full overflow-y-scroll p-6 flex items-start flex-wrap gap-4 text-slate-700">
+    <div className="h-full p-6 flex items-start flex-wrap gap-4 text-slate-700">
       <form
         onSubmit={onSubmitHandler}
         className="w-full max-w-lg p-4 bg-white rounded-lg border border-gray-200"
@@ -88,11 +89,24 @@ const GenerateImage = () => {
           ))}
         </div>
 
+        <div className="my-6 flex items-center gap-2">
+          <input
+            type="checkbox"
+            checked={publish}
+            onChange={(e) => setPublish(e.target.checked)} // ✅ fixed
+          />
+          <span className="text-sm">Publish this image</span>
+        </div>
+
         <button
           disabled={loading}
           className="mt-6 flex w-full gap-2 items-center justify-center p-2 rounded-md bg-blue-500 hover:bg-blue-600 transition text-white shadow disabled:opacity-60"
         >
-          {loading ? <Loader2 className="w-5 h-5 animate-spin" /> : <ImageIcon className="w-5 h-5" />}
+          {loading ? (
+            <Loader2 className="w-5 h-5 animate-spin" />
+          ) : (
+            <ImageIcon className="w-5 h-5" />
+          )}
           {loading ? "Generating..." : "Generate image"}
         </button>
 
